@@ -27,7 +27,9 @@ BLIP/
 ├─ README.md
 ├─ requirements.txt
 ├─ caption.py
-└─ images/
+├─ data/
+│  ├─ captions.txt
+│  └─ images/
 ```
 
 请把测试图片放到 `images/` 目录中，例如 `images/test.jpg`。
@@ -192,4 +194,4 @@ Get-ChildItem images
 5. A little girl in a pink dress going into a wooden cabin .
 
 **简单评价：**  
-BLIP 抓住了图片中的核心主体信息，即“小女孩”和“粉色裙子”，与人工标注较一致；但相比人工 captions，模型输出更简短，缺少“爬楼梯”“进入木屋”等动作和场景细节。:contentReference[oaicite:3]{index=3}
+BLIP 抓住了图片中的核心主体信息，即“小女孩”和“粉色裙子”，与人工标注较一致；但相比人工 captions，模型输出更简短，缺少“爬楼梯”“进入木屋”等动作和场景细节。
