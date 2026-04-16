@@ -179,32 +179,17 @@ Get-ChildItem images
 
 
 ## 实验结果示例
+### 1000268201_693b08cb0e.jpg
 
-本项目使用 `Salesforce/blip-image-captioning-base` 模型对多张本地图片进行图像描述实验。以下为部分测试结果：
+**BLIP 输出：**  
+`a little girl in a pink dress`
 
-| 图片名 | 模型输出 | 评价 |
-|---|---|---|
-| `cat.jpg` | `a gray cat sitting on top of a wooden table` | 描述较准确，能够识别主体“cat”以及所处位置“wooden table” |
-| `lake.jpg` | `a body of water` | 能识别出水域场景，但描述较为笼统，缺少更多细节 |
-| `blackboard.jpg` | `a blackboard with many equations written on it` | 描述较准确，能够识别黑板以及上面的公式信息 |
-| `mcdonald.jpg` | `a tray with food and drinks on it` | 对餐饮场景识别较好，抓住了托盘、食物和饮料等关键元素 |
-| `aircraft window.jpg` | `a view of a city from an airplane window` | 描述效果较好，能够识别“airplane window”以及窗外城市景象 |
+**人工 captions：**
+1. A child in a pink dress is climbing up a set of stairs in an entry way .
+2. A girl going into a wooden building .
+3. A little girl climbing into a wooden playhouse .
+4. A little girl climbing the stairs to her playhouse .
+5. A little girl in a pink dress going into a wooden cabin .
 
-## 实验结果分析
-
-从目前的实验结果来看，BLIP 在图像描述任务中表现出了较好的基础视觉-语言理解能力。
-
-1. 对于**主体明确、场景集中的图片**，模型通常能够生成较准确的描述。  
-   例如 `cat.jpg`、`blackboard.jpg` 和 `mcdonald.jpg` 的结果都比较自然，并且抓住了图像中的主要对象和场景信息。
-
-2. 对于**风景类或大场景图片**，模型虽然能够识别大致类别，但描述会偏向概括化。  
-   例如 `lake.jpg` 的输出仅为 `a body of water`，说明模型捕捉到了核心场景，但细节表达能力仍然有限。
-
-3. 对于**带有明显视角特征的图片**，模型也能较好地进行描述。  
-   例如 `aircraft window.jpg` 的输出不仅识别出城市，还识别出了“from an airplane window”这一观察视角，说明模型在部分场景关系理解上表现较好。
-
-## 初步结论
-
-本次实验表明，BLIP 可以较稳定地完成基础图像描述任务，尤其在主体清晰、语义明确的图片上表现较好。但在复杂风景场景中，模型输出仍可能较为笼统，细节表达能力有待进一步观察和改进。
-
-
+**简单评价：**  
+BLIP 抓住了图片中的核心主体信息，即“小女孩”和“粉色裙子”，与人工标注较一致；但相比人工 captions，模型输出更简短，缺少“爬楼梯”“进入木屋”等动作和场景细节。:contentReference[oaicite:3]{index=3}
