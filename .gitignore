@@ -9,5 +9,11 @@ Thumbs.db
 .env
 .idea/
 .vscode/
-data/
+
+# dataset and generated results
+data/images/
+data/captions.txt
 results/
+
+# optional local docs cache or temp files
+*.log
