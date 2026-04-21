@@ -2,28 +2,36 @@
 
 这是一个基于 Hugging Face `Salesforce/blip-image-captioning-base` 的图像描述实验项目。
 
-本项目主要完成了两部分内容：
-
-1. 对单张本地图片生成 caption  
-2. 在 Flickr8k 数据集上进行批量实验，并将模型输出与人工 captions 保存到 CSV 文件中
-
-项目目标不是训练模型，而是完成一个可运行、可分析、可扩展的多模态视觉入门实验。
+本项目以 Flickr8k 数据集为实验对象，围绕 **单图 caption 生成、批量实验、代表样本筛选与生成策略比较** 搭建了一个可运行、可分析、可扩展的多模态视觉入门实验流程。项目重点不在于重新训练模型，而在于观察预训练图像描述模型在真实数据集上的表现，并通过结果分析逐步推进后续改进。
 
 ---
 
-## 一、项目功能
+## 1. 项目内容
+
+当前项目主要完成了以下工作：
+
+- 对单张本地图片生成 caption
+- 在 Flickr8k 数据集上进行批量推理
+- 将模型输出与 5 条人工 captions 保存到 CSV
+- 基于 simple F1 与人工复核筛选代表样本
+- 在代表样本上比较不同生成策略的效果
+
+---
+
+## 2. 项目功能
 
 当前项目支持：
 
 - 使用 BLIP 模型对单张图片生成描述
 - 自动选择 GPU 或 CPU 进行推理
-- 在 Flickr8k 数据集上批量生成 caption
+- 对 Flickr8k 进行批量 caption 生成
 - 保存模型输出与人工 captions 的对比结果
-- 为后续扩展到 VQA（视觉问答）提供基础
+- 构造好 / 中 / 差三类代表样本
+- 比较不同 decoding 参数对 caption 结果的影响
 
 ---
 
-## 二、项目结构
+## 3. 项目结构
 
 ```text
 BLIP/
@@ -34,49 +42,61 @@ BLIP/
 ├─ run_flickr8k_batch.py
 ├─ select_samples_by_f1.py
 ├─ export_final_samples.py
+├─ run_generation_strategy_experiments.py
+├─ compare_captions.py
 ├─ docs/
-│  └─ sample_selection.md
+│  ├─ sample_selection.md
+│  └─ generation_strategy_experiments.md
 ├─ results/
+│  ├─ .gitkeep
 │  ├─ results.csv
 │  ├─ sample_selection/
 │  │  ├─ all_with_best_f1.csv
 │  │  ├─ good_candidates.csv
 │  │  ├─ medium_candidates.csv
 │  │  └─ bad_candidates.csv
-│  └─ final_samples/
-│     ├─ final_good_samples.csv
-│     ├─ final_medium_samples.csv
-│     ├─ final_bad_samples.csv
-│     ├─ final_all_samples.csv
-│     ├─ good/
-│     ├─ medium/
-│     └─ bad/
+│  ├─ final_samples/
+│  │  ├─ final_good_samples.csv
+│  │  ├─ final_medium_samples.csv
+│  │  ├─ final_bad_samples.csv
+│  │  ├─ final_all_samples.csv
+│  │  ├─ good/
+│  │  ├─ medium/
+│  │  └─ bad/
+│  └─ strategy_experiments/
+│     ├─ strategy_results_long.csv
+│     ├─ strategy_results_wide.csv
+│     └─ strategy_summary.csv
 ├─ data/
 │  ├─ captions.txt
 │  └─ images/
+└─ .venv/
 ````
 
-各文件作用如下：
+各主要文件作用如下：
 
 * `caption.py`：对单张图片生成 caption
 * `run_flickr8k_batch.py`：批量处理 Flickr8k 图片并保存结果
-* `data/captions.txt`：Flickr8k 的人工标注文件
-* `data/images/`：Flickr8k 图片数据
-* `results/results.csv`：批量实验输出结果
+* `select_samples_by_f1.py`：计算 simple F1 并导出候选样本
+* `export_final_samples.py`：导出最终代表样本并复制对应图片
+* `run_generation_strategy_experiments.py`：对最终样本运行不同生成策略
+* `compare_captions.py`：辅助查看模型输出与人工 captions 的差异
+* `docs/sample_selection.md`：记录代表样本筛选思路与结果
+* `docs/generation_strategy_experiments.md`：记录生成策略实验设计与结论
 
 ---
 
-## 三、环境配置
+## 4. 环境配置
 
 建议使用虚拟环境。
 
-### 1. 创建虚拟环境
+### 4.1 创建虚拟环境
 
 ```powershell
 py -3.12 -m venv .venv
 ```
 
-### 2. 激活虚拟环境
+### 4.2 激活虚拟环境
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
@@ -88,29 +108,27 @@ py -3.12 -m venv .venv
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
-然后再次激活虚拟环境。
+然后再次执行激活命令。
 
-### 3. 安装依赖
+### 4.3 安装依赖
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-如果希望使用 GPU，需要安装支持 CUDA 的 PyTorch 版本。
+如果你希望使用 GPU，需要安装与本机 CUDA 兼容的 PyTorch 版本。
 
 ---
 
-## 四、使用方法
+## 5. 使用方法
 
-### 1. 单张图片生成 caption
-
-示例命令：
+### 5.1 单张图片生成 caption
 
 ```powershell
 python caption.py data/images/1000268201_693b08cb0e.jpg
 ```
 
-运行成功后会输出一条图像描述，例如：
+运行成功后，会输出一条图像描述，例如：
 
 ```text
 a little girl in a pink dress
@@ -118,7 +136,7 @@ a little girl in a pink dress
 
 ---
 
-### 2. Flickr8k 批量实验
+### 5.2 Flickr8k 批量实验
 
 先做小规模测试：
 
@@ -150,9 +168,66 @@ results/results.csv
 
 ---
 
-## 五、实验结果示例
+### 5.3 代表样本筛选
 
-### 图片：1000268201_693b08cb0e.jpg
+先根据批量实验结果计算 simple F1 并导出候选样本：
+
+```powershell
+python select_samples_by_f1.py
+```
+
+再根据人工确认的名单导出最终代表样本：
+
+```powershell
+python export_final_samples.py
+```
+
+运行后会生成：
+
+```text
+results/final_samples/final_good_samples.csv
+results/final_samples/final_medium_samples.csv
+results/final_samples/final_bad_samples.csv
+results/final_samples/final_all_samples.csv
+```
+
+并将对应图片复制到：
+
+```text
+results/final_samples/good/
+results/final_samples/medium/
+results/final_samples/bad/
+```
+
+---
+
+### 5.4 生成策略实验
+
+在最终代表样本上比较不同生成参数：
+
+```powershell
+python run_generation_strategy_experiments.py
+```
+
+当前实验比较了三种设置：
+
+* `baseline`：`max_new_tokens=20`
+* `exp1_longer`：`max_new_tokens=30`
+* `exp2_beam5`：`num_beams=5, max_new_tokens=30`
+
+运行完成后，结果会保存到：
+
+```text
+results/strategy_experiments/strategy_results_long.csv
+results/strategy_experiments/strategy_results_wide.csv
+results/strategy_experiments/strategy_summary.csv
+```
+
+---
+
+## 6. 批量实验结果示例
+
+以图片 `1000268201_693b08cb0e.jpg` 为例：
 
 **BLIP 输出：**
 
@@ -168,51 +243,43 @@ a little girl in a pink dress
 4. A little girl climbing the stairs to her playhouse .
 5. A little girl in a pink dress going into a wooden cabin .
 
-**简单分析：**
-
-BLIP 能较好识别图片中的主体和关键属性，如“小女孩”和“粉色裙子”；
-但相比人工 captions，模型输出更短，缺少“爬楼梯”“进入木屋”等动作和场景细节。
+从这个例子可以看出，BLIP 能较好识别图片中的主体和关键属性，但输出通常较短，容易省略动作和场景细节。
 
 ---
 
-## 六、初步实验结论
+## 7. 当前实验结论
 
-在 Flickr8k 数据集上的实验表明：
+在 Flickr8k 数据集上的批量实验中，BLIP 对主体明确、场景典型的图片通常能够给出较准确的描述；但整体输出偏短，常常省略动作、人物关系、数量信息和背景细节。在复杂场景中，模型更容易生成较泛化的表述，或者被背景信息带偏。
 
-* 对主体明确、场景典型的图片，BLIP 通常能够给出较准确的描述
-* 模型输出整体偏短，常常省略动作、关系和场景细节
-* 在复杂场景下，模型有时会生成较泛化的描述
-* 与人工 captions 相比，BLIP 更擅长抓住“主要对象”，但细节表达能力仍有限
+在代表样本上的生成策略比较中，还得到以下结果：
 
----
+* 单纯增大 `max_new_tokens` 基本没有带来实质改进
+* 引入 `num_beams=5` 后，整体词面匹配分数有一定提升
+* beam search 的提升主要体现在原本生成较差的样本上
+* 对原本已经生成较好的样本，beam search 有时会把准确描述改写成更泛化的表达
 
-## 七、代表样本筛选
-
-为了进一步开展生成策略实验，本项目从 Flickr8k 全量结果中筛选了一组代表性样本。
-
-筛选流程分为两步：
-
-1. 先基于 BLIP 输出与 5 条人工 captions 的简单词级 F1 分数进行初筛  
-2. 再结合人工复核，从候选池中确定最终的好 / 中 / 差三类样本
-
-最终保留：
-
-- 好样本 5 张
-- 中样本 10 张
-- 差样本 15 张
-
-这些样本将用于后续比较不同生成参数（如 `max_new_tokens`、`num_beams`）对 caption 质量的影响。
-
-更详细的筛选依据、simple F1 的计算方式以及最终样本列表见：`sample_selection.md`
+因此，beam search 更适合作为困难样本上的补充策略，而不是对 baseline 的统一替代。
 
 ---
 
-## 八、说明
+## 8. 文档说明
+
+为了避免 README 过长，项目将较详细的实验说明拆分到了 `docs/` 目录下：
+
+* `docs/sample_selection.md`：代表样本筛选流程、simple F1 定义、人工复核标准与最终样本说明
+* `docs/generation_strategy_experiments.md`：生成策略实验设计、结果汇总与典型样本分析
+
+README 主要保留项目总览、核心流程和关键结论。
+
+---
+
+## 9. 项目定位
 
 本项目的重点不在于从零训练模型，而在于：
 
 * 搭建一个完整可运行的多模态实验流程
-* 观察模型在真实数据集上的表现
-* 通过结果分析提出后续改进方向
+* 观察预训练图像描述模型在真实数据集上的表现
+* 通过样本分析和小规模实验提出改进方向
+* 为后续扩展到更复杂的多模态任务打下基础
 
 因此，这个项目更适合作为多模态视觉任务的入门实验与后续扩展基础。

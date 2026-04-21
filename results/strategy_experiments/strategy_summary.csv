@@ -1,0 +1,10 @@
+﻿strategy,group,count,mean,median,max,min
+exp2_beam5,bad,15,0.1813,0.125,0.4444,0.0
+baseline,bad,15,0.0535,0.0,0.125,0.0
+exp1_longer,bad,15,0.0535,0.0,0.125,0.0
+baseline,good,5,1.0,1.0,1.0,1.0
+exp1_longer,good,5,1.0,1.0,1.0,1.0
+exp2_beam5,good,5,0.8341,1.0,1.0,0.5455
+baseline,medium,10,0.5,0.5,0.5,0.5
+exp1_longer,medium,10,0.5,0.5,0.5,0.5
+exp2_beam5,medium,10,0.48019999999999996,0.5,0.8333,0.2353
