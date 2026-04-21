@@ -32,8 +32,25 @@ BLIP/
 ├─ requirements.txt
 ├─ caption.py
 ├─ run_flickr8k_batch.py
+├─ select_samples_by_f1.py
+├─ export_final_samples.py
+├─ docs/
+│  └─ sample_selection.md
 ├─ results/
-│  └─ results.csv
+│  ├─ results.csv
+│  ├─ sample_selection/
+│  │  ├─ all_with_best_f1.csv
+│  │  ├─ good_candidates.csv
+│  │  ├─ medium_candidates.csv
+│  │  └─ bad_candidates.csv
+│  └─ final_samples/
+│     ├─ final_good_samples.csv
+│     ├─ final_medium_samples.csv
+│     ├─ final_bad_samples.csv
+│     ├─ final_all_samples.csv
+│     ├─ good/
+│     ├─ medium/
+│     └─ bad/
 ├─ data/
 │  ├─ captions.txt
 │  └─ images/
