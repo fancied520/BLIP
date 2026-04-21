@@ -9,11 +9,16 @@ Thumbs.db
 .env
 .idea/
 .vscode/
+*.log
 
-# dataset and generated results
+# ignore large raw dataset
 data/images/
 data/captions.txt
-results/
 
-# optional local docs cache or temp files
-*.log
+# ignore generated experiment files
+results/sample_selection/
+results/final_samples/
+results/results.csv
+
+# keep folder structure if needed
+!results/.gitkeep
