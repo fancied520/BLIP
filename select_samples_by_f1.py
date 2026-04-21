@@ -27,7 +27,7 @@ def simple_f1(pred: str, ref: str) -> float:
     return 2 * precision * recall / (precision + recall)
 
 
-def best_f1_against_refs(pred: str, refs: list[str]):
+def best_f1_against_refs(pred: str, refs):
     valid_refs = [r for r in refs if isinstance(r, str) and r.strip()]
     if not valid_refs:
         return 0.0, ""
@@ -65,8 +65,9 @@ def load_results(csv_file: str):
     return rows
 
 
-def save_csv(rows, output_file: str):
+def save_csv(rows, output_file: Path):
     if not rows:
+        print(f"[Warning] No rows to save: {output_file}")
         return
 
     fieldnames = list(rows[0].keys())
@@ -77,12 +78,17 @@ def save_csv(rows, output_file: str):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Select good / medium / bad samples by simple token-level F1.")
+    parser = argparse.ArgumentParser(
+        description="Select candidate pools for good / medium / bad samples by simple token-level F1."
+    )
     parser.add_argument("--input-file", type=str, default="results/results.csv")
     parser.add_argument("--output-dir", type=str, default="results/sample_selection")
-    parser.add_argument("--num-good", type=int, default=5)
-    parser.add_argument("--num-medium", type=int, default=10)
-    parser.add_argument("--num-bad", type=int, default=15)
+
+    # 候选池大小，而不是最终样本数
+    parser.add_argument("--num-good-candidates", type=int, default=20)
+    parser.add_argument("--num-medium-candidates", type=int, default=30)
+    parser.add_argument("--num-bad-candidates", type=int, default=30)
+
     args = parser.parse_args()
 
     output_dir = Path(args.output_dir)
@@ -94,31 +100,45 @@ def main():
         return
 
     rows_sorted = sorted(rows, key=lambda x: x["best_f1"], reverse=True)
-
     total = len(rows_sorted)
+
     print(f"Total rows: {total}")
 
-    # 好样本：直接取前 num_good 个
-    good_samples = rows_sorted[:args.num_good]
+    # 1. 好候选：取前若干高分样本
+    good_candidates = rows_sorted[:args.num_good_candidates]
 
-    # 差样本：直接取后 num_bad 个
-    bad_samples = rows_sorted[-args.num_bad:]
+    # 2. 差候选：取后若干低分样本
+    bad_candidates = rows_sorted[-args.num_bad_candidates:]
 
-    # 中样本：从中间附近取 num_medium 个
-    mid_start = max(0, total // 2 - args.num_medium // 2)
-    mid_end = mid_start + args.num_medium
-    medium_samples = rows_sorted[mid_start:mid_end]
+    # 3. 中候选：从中间区域取更大的候选池
+    mid_center = total // 2
+    half_window = args.num_medium_candidates // 2
+    mid_start = max(0, mid_center - half_window)
+    mid_end = min(total, mid_start + args.num_medium_candidates)
 
+    # 防止接近尾部时长度不够
+    if mid_end - mid_start < args.num_medium_candidates:
+        mid_start = max(0, mid_end - args.num_medium_candidates)
+
+    medium_candidates = rows_sorted[mid_start:mid_end]
+
+    # 保存
     save_csv(rows_sorted, output_dir / "all_with_best_f1.csv")
-    save_csv(good_samples, output_dir / "good_samples.csv")
-    save_csv(medium_samples, output_dir / "medium_samples.csv")
-    save_csv(bad_samples, output_dir / "bad_samples.csv")
+    save_csv(good_candidates, output_dir / "good_candidates.csv")
+    save_csv(medium_candidates, output_dir / "medium_candidates.csv")
+    save_csv(bad_candidates, output_dir / "bad_candidates.csv")
 
-    print(f"Saved:")
+    print("Saved:")
     print(f"- {output_dir / 'all_with_best_f1.csv'}")
-    print(f"- {output_dir / 'good_samples.csv'}")
-    print(f"- {output_dir / 'medium_samples.csv'}")
-    print(f"- {output_dir / 'bad_samples.csv'}")
+    print(f"- {output_dir / 'good_candidates.csv'}")
+    print(f"- {output_dir / 'medium_candidates.csv'}")
+    print(f"- {output_dir / 'bad_candidates.csv'}")
+
+    print("\nNext step:")
+    print("Please manually review these candidate pools, then create:")
+    print("- final_good_samples.csv   (5 samples)")
+    print("- final_medium_samples.csv (10 samples)")
+    print("- final_bad_samples.csv    (15 samples)")
 
 
 if __name__ == "__main__":
